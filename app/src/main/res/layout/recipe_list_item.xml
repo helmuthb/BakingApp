@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.CardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:card_view="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:layout_marginTop="@dimen/normal_margin">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/recipe_list_item_name"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="@dimen/text_margin"
+            android:textAppearance="@style/FontHeading"
+            tools:text="Super Cupcake"
+            />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+            <ImageView
+                android:id="@+id/recipe_list_item_image"
+                android:layout_width="match_parent"
+                android:layout_height="@dimen/list_image_height"
+                android:contentDescription="@string/missing_recipe_picture"
+                android:src="@drawable/baking_placeholder"
+                android:scaleType="centerCrop"/>
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textAppearance="@style/FontImageOverwrite"
+                android:text="@string/no_image"
+                />
+        </FrameLayout>
+
+        <Button
+            android:id="@+id/recipe_list_item_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text = "More"
+            android:background="@android:color/transparent"
+            android:textColor="?colorPrimary"/>
+    </LinearLayout>
+</android.support.v7.widget.CardView>
