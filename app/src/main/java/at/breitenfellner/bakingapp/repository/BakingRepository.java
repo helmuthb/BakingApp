@@ -6,7 +6,9 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.arch.persistence.room.Room;
 import android.content.Context;
+import android.content.Intent;
 import android.support.annotation.AnyThread;
+import android.support.annotation.IntegerRes;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.support.annotation.WorkerThread;
@@ -22,6 +24,7 @@ import at.breitenfellner.bakingapp.model.JsonRecipe;
 import at.breitenfellner.bakingapp.model.Recipe;
 import at.breitenfellner.bakingapp.model.RecipeList;
 import at.breitenfellner.bakingapp.model.Step;
+import at.breitenfellner.bakingapp.model.WidgetRecipe;
 import at.breitenfellner.bakingapp.service.BakingService;
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -40,6 +43,8 @@ public class BakingRepository {
     private final HashMap<Integer, MutableLiveData<Recipe>> recipeCache;
     private final HashMap<Integer, MutableLiveData<List<Ingredient>>> ingredientListCache;
     private final HashMap<Integer, MutableLiveData<List<Step>>> stepListCache;
+    private final HashMap<Integer, MutableLiveData<Recipe>> widgetRecipeCache;
+    private final HashMap<Integer, MutableLiveData<List<Ingredient>>> widgetIngredientListCache;
     private final MediatorLiveData<RecipeList> allRecipes;
     private final MutableLiveData<RecipeList> jsonRecipes;
     private MutableLiveData<RecipeList> dbRecipes;
@@ -58,6 +63,8 @@ public class BakingRepository {
         recipeCache = new HashMap<>();
         ingredientListCache = new HashMap<>();
         stepListCache = new HashMap<>();
+        widgetRecipeCache = new HashMap<>();
+        widgetIngredientListCache = new HashMap<>();
         allRecipes = new MediatorLiveData<>();
         jsonRecipes = new MutableLiveData<>();
         dbRecipes = null;
@@ -306,5 +313,94 @@ public class BakingRepository {
         // initiate reading from Net - if needed
         loadJsonFromNet();
         return liveSteps;
+    }
+
+    @UiThread
+    public LiveData<Recipe> getWidgetRecipe(final int widgetId) {
+        // is it in cache?
+        final MutableLiveData<Recipe> widgetRecipe;
+        synchronized (widgetRecipeCache) {
+            if (widgetRecipeCache.containsKey(widgetId)) {
+                return widgetRecipeCache.get(widgetId);
+            }
+            else {
+                widgetRecipe = new MutableLiveData<>();
+                widgetRecipeCache.put(widgetId, widgetRecipe);
+            }
+        }
+        // read recipe from DB
+        new Thread(new Runnable() {
+            @WorkerThread
+            @Override
+            public void run() {
+                Recipe recipe = dao.getRecipeForWidget(widgetId);
+                widgetRecipe.postValue(recipe);
+            }
+        }).start();
+        // return livedata which will be updated later
+        return widgetRecipe;
+    }
+
+    @UiThread
+    public LiveData<List<Ingredient>> getWidgetIngredients(final int widgetId) {
+        // is it in cache?
+        final MutableLiveData<List<Ingredient>> widgetIngredients;
+        synchronized (widgetIngredientListCache) {
+            if (widgetIngredientListCache.containsKey(widgetId)) {
+                return widgetIngredientListCache.get(widgetId);
+            }
+            else {
+                widgetIngredients = new MutableLiveData<>();
+                widgetIngredientListCache.put(widgetId, widgetIngredients);
+            }
+        }
+        // read ingredients from DB
+        new Thread(new Runnable() {
+            @WorkerThread
+            @Override
+            public void run() {
+                List<Ingredient> ingredients = dao.getIngredientForWidget(widgetId);
+                widgetIngredients.postValue(ingredients);
+            }
+        }).start();
+        // return livedata which will be updated later
+        return widgetIngredients;
+    }
+
+    @UiThread
+    public void setWidgetRecipe(final int widgetId, final int recipeId) {
+        final WidgetRecipe widgetRecipe = new WidgetRecipe();
+        widgetRecipe.id = widgetId;
+        widgetRecipe.recipeId = recipeId;
+        // write into DB
+        new Thread(new Runnable() {
+            @WorkerThread
+            @Override
+            public void run() {
+                dao.setWidgetRecipe(widgetRecipe);
+                // re-read recipe & ingredients if in cache
+                MutableLiveData<Recipe> recipeData = null;
+                MutableLiveData<List<Ingredient>> ingredientsData = null;
+                // only check in synchronized block - read outside
+                synchronized (widgetRecipeCache) {
+                    if (widgetRecipeCache.containsKey(widgetId)) {
+                        recipeData = widgetRecipeCache.get(widgetId);
+                    }
+                }
+                synchronized (widgetIngredientListCache) {
+                    if (widgetIngredientListCache.containsKey(widgetId)) {
+                        ingredientsData = widgetIngredientListCache.get(widgetId);
+                    }
+                }
+                if (recipeData != null) {
+                    Recipe recipe = dao.getRecipeById(recipeId);
+                    recipeData.postValue(recipe);
+                }
+                if (ingredientsData != null) {
+                    List<Ingredient> ingredients = dao.getIngredients(recipeId);
+                    ingredientsData.postValue(ingredients);
+                }
+            }
+        }).start();
     }
 }

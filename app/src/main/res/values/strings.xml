@@ -8,4 +8,8 @@
     <string name="title_ingredients">Ingredients</string>
     <string name="title_steps">Steps</string>
     <string name="servings_text">Serves: %1$d</string>
+    <string name="cancel">Cancel</string>
+    <string name="select">Select</string>
+    <string name="more">More</string>
+    <string name="configure">Configure</string>
 </resources>

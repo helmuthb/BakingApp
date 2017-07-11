@@ -2,7 +2,7 @@
   "formatVersion": 1,
   "database": {
     "version": 1,
-    "identityHash": "357542fb5423c871b00de17bf73f1f31",
+    "identityHash": "203901f7a2cedb7e1634474e157e0fa3",
     "entities": [
       {
         "tableName": "recipe",
@@ -167,11 +167,35 @@
             ]
           }
         ]
+      },
+      {
+        "tableName": "widget_recipe",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`_id` INTEGER, `recipe_id` INTEGER, PRIMARY KEY(`_id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "_id",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "recipeId",
+            "columnName": "recipe_id",
+            "affinity": "INTEGER"
+          }
+        ],
+        "primaryKey": {
+          "columnNames": [
+            "_id"
+          ],
+          "autoGenerate": false
+        },
+        "indices": [],
+        "foreignKeys": []
       }
     ],
     "setupQueries": [
       "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
-      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"357542fb5423c871b00de17bf73f1f31\")"
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, \"203901f7a2cedb7e1634474e157e0fa3\")"
     ]
   }
 }
