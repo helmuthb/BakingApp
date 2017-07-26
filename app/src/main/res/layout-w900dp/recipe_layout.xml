@@ -1,7 +1,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/recipe_activity_multipane"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/recipe_activity_multipane"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:layout_marginLeft="@dimen/normal_margin"
@@ -13,16 +13,9 @@
     tools:context="at.breitenfellner.bakingapp.view.RecipeActivity">
 
     <!--
-    This layout is a two/three-pane layout for the Recipes
+    This layout is a two-pane layout for the Recipes
     master/detail flow.
-    
     -->
-
-    <FrameLayout
-        android:id="@+id/recipe_list_container"
-        android:layout_width="0dp"
-        android:layout_height="match_parent"
-        android:layout_weight="1" />
 
     <FrameLayout
         android:id="@+id/recipe_detail_container"

@@ -38,12 +38,6 @@ public class RecipeActivityTest {
 
     @Test
     public void recipeActivityTest() {
-        ViewInteraction recyclerView = onView(
-                allOf(withId(R.id.recipe_list_fragment),
-                        withParent(allOf(withId(R.id.recipe_list_container),
-                                withParent(withId(R.id.recipe_activity_singlepane)))),
-                        isDisplayed()));
-        recyclerView.perform(actionOnItemAtPosition(0, click()));
 
         ViewInteraction imageButton = onView(
                 allOf(withContentDescription("Navigate up"),

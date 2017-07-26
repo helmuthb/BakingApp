@@ -4,9 +4,9 @@ import android.arch.lifecycle.LifecycleFragment;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
 import android.support.annotation.Nullable;
-import android.support.design.widget.CollapsingToolbarLayout;
 import android.os.Bundle;
-import android.support.design.widget.FloatingActionButton;
+import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -31,7 +31,7 @@ import butterknife.ButterKnife;
 /**
  * A fragment representing a single Recipe detail screen.
  */
-public class RecipeDetailFragment extends LifecycleFragment implements View.OnClickListener {
+public class RecipeDetailFragment extends LifecycleFragment implements StepAdapter.StepClickListener {
     RecipeViewModel viewModel;
 
     @BindView(R.id.recipe_detail_title)
@@ -41,9 +41,9 @@ public class RecipeDetailFragment extends LifecycleFragment implements View.OnCl
     @BindView(R.id.recipe_detail_servings)
     TextView servingsText;
     @BindView(R.id.recipe_detail_ingredients)
-    TableLayout ingredientsLayout;
+    RecyclerView ingredientsLayout;
     @BindView(R.id.recipe_detail_steps)
-    TableLayout stepsLayout;
+    RecyclerView stepsLayout;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -70,7 +70,7 @@ public class RecipeDetailFragment extends LifecycleFragment implements View.OnCl
                 }
                 else {
                     recipeText.setText(recipe.name);
-                    if (recipe.image != null && recipe.image.length() > 0) {
+                    if (!TextUtils.isEmpty(recipe.image)) {
                         recipeImage.setVisibility(View.VISIBLE);
                         Picasso.with(getContext())
                                 .load(recipe.image)
@@ -89,25 +89,9 @@ public class RecipeDetailFragment extends LifecycleFragment implements View.OnCl
         viewModel.getIngredients().observe(this, new Observer<List<Ingredient>>() {
             @Override
             public void onChanged(@Nullable List<Ingredient> ingredients) {
-                ingredientsLayout.removeAllViews();
                 if (ingredients != null) {
-                    DecimalFormat format = new DecimalFormat();
-                    format.setDecimalSeparatorAlwaysShown(false);
-                    LayoutInflater inflater = LayoutInflater.from(getContext());
-                    for (Ingredient i : ingredients) {
-                        TableRow tr = (TableRow)inflater.inflate(
-                                R.layout.recipe_ingredients_template,
-                                null,
-                                false);
-                        TextView tvCount = (TextView)tr.findViewById(R.id.recipe_ingredient_count);
-                        TextView tvUnit = (TextView)tr.findViewById(R.id.recipe_ingredient_unit);
-                        TextView tvText = (TextView)tr.findViewById(R.id.recipe_ingredient_text);
-                        tvCount.setText(format.format(i.quantity));
-                        tvUnit.setText(i.measure);
-                        tvText.setText(i.name);
-                        ingredientsLayout.addView(tr);
-                    }
-                    ingredientsLayout.setColumnShrinkable(2, true);
+                    IngredientAdapter ingredientAdapter = new IngredientAdapter(ingredients);
+                    ingredientsLayout.setAdapter(ingredientAdapter);
                 }
             }
         });
@@ -116,24 +100,9 @@ public class RecipeDetailFragment extends LifecycleFragment implements View.OnCl
         viewModel.getSteps().observe(this, new Observer<List<Step>>() {
             @Override
             public void onChanged(@Nullable List<Step> steps) {
-                stepsLayout.removeAllViews();
                 if (steps != null) {
-                    LayoutInflater inflater = LayoutInflater.from(getContext());
-                    for (Step s : steps) {
-                        TableRow tr = (TableRow)inflater.inflate(
-                                R.layout.recipe_steps_template,
-                                null,
-                                false);
-                        TextView tvNr = (TextView)tr.findViewById(R.id.recipe_step_nr);
-                        TextView tvText = (TextView)tr.findViewById(R.id.recipe_step_instruction);
-                        if (s.nr > 0) {
-                            tvNr.setText(Integer.toString(s.nr) + ".");
-                        }
-                        tvText.setText(s.name);
-                        tr.setTag(s.nr);
-                        tr.setOnClickListener(RecipeDetailFragment.this);
-                        stepsLayout.addView(tr);
-                    }
+                    StepAdapter stepAdapter = new StepAdapter(steps, RecipeDetailFragment.this);
+                    stepsLayout.setAdapter(stepAdapter);
                 }
             }
         });
@@ -141,11 +110,9 @@ public class RecipeDetailFragment extends LifecycleFragment implements View.OnCl
         return rootView;
     }
 
-    @Override
-    public void onClick(View view) {
-        Integer stepNr = (Integer)view.getTag();
-        if (stepNr != null) {
-            viewModel.loadStepByNr(stepNr);
+    public void onStepClick(Step step) {
+        if (step != null) {
+            viewModel.loadStepByNr(step.nr);
         }
     }
 }

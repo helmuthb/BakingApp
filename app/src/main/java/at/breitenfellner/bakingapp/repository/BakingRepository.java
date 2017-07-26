@@ -79,6 +79,11 @@ public class BakingRepository {
                     if (!recipeList.error || (recipeList.error && allRecipes.getValue() == null)) {
                         allRecipes.setValue(recipeList);
                     }
+                    else {
+                        // set data again to show error message
+                        recipeList.recipes = allRecipes.getValue().recipes;
+                        allRecipes.setValue(recipeList);
+                    }
                 }
             }
         });

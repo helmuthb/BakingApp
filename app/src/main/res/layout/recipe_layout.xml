@@ -1,21 +1,10 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/recipe_activity_singlepane"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:layout_marginLeft="@dimen/normal_margin"
-    android:layout_marginRight="@dimen/normal_margin"
     android:baselineAligned="false"
-    android:divider="?android:attr/dividerHorizontal"
-    android:orientation="horizontal"
-    android:showDividers="middle"
     tools:context="at.breitenfellner.bakingapp.view.RecipeActivity">
-
-    <FrameLayout
-        android:id="@+id/recipe_list_container"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent" />
 
     <FrameLayout
         android:id="@+id/recipe_detail_container"

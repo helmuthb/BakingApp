@@ -33,28 +33,32 @@ public class IngredientsWidget extends AppWidgetProvider {
         repository.getWidgetRecipe(appWidgetId).observeForever(new Observer<Recipe>() {
             @Override
             public void onChanged(@Nullable Recipe recipe) {
-                views.setTextViewText(R.id.appwidget_title, recipe.name);
-                Intent intent = new Intent(context, RecipeActivity.class);
-                intent.putExtra(Recipe.class.getName(), recipe.id);
-                PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
-                views.setOnClickPendingIntent(R.id.appwidget_layout, pendingIntent);
-                repository.getWidgetIngredients(appWidgetId).observeForever(new Observer<List<Ingredient>>() {
-                    @Override
-                    public void onChanged(@Nullable List<Ingredient> ingredients) {
-                        String ingredientsText = "";
-                        for (Ingredient i : ingredients) {
-                            ingredientsText = ingredientsText +
-                                    i.quantity +
-                                    " " +
-                                    i.measure +
-                                    " " +
-                                    i.name +
-                                    "\n";
+                if (recipe != null) {
+                    views.setTextViewText(R.id.appwidget_title, recipe.name);
+                    Intent intent = new Intent(context, RecipeActivity.class);
+                    intent.putExtra(Recipe.class.getName(), recipe.id);
+                    PendingIntent pendingIntent = PendingIntent.getActivity(context, 0, intent, 0);
+                    views.setOnClickPendingIntent(R.id.appwidget_layout, pendingIntent);
+                    repository.getWidgetIngredients(appWidgetId).observeForever(new Observer<List<Ingredient>>() {
+                        @Override
+                        public void onChanged(@Nullable List<Ingredient> ingredients) {
+                            if (ingredients != null) {
+                                String ingredientsText = "";
+                                for (Ingredient i : ingredients) {
+                                    ingredientsText = ingredientsText +
+                                            i.quantity +
+                                            " " +
+                                            i.measure +
+                                            " " +
+                                            i.name +
+                                            "\n";
+                                }
+                                views.setTextViewText(R.id.appwidget_ingredients, ingredientsText);
+                                appWidgetManager.updateAppWidget(appWidgetId, views);
+                            }
                         }
-                        views.setTextViewText(R.id.appwidget_ingredients, ingredientsText);
-                        appWidgetManager.updateAppWidget(appWidgetId, views);
-                    }
-                });
+                    });
+                }
             }
         });
     }

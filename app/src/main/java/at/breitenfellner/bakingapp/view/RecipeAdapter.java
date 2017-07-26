@@ -4,6 +4,7 @@ import android.content.Context;
 import android.support.annotation.NonNull;
 import android.support.annotation.UiThread;
 import android.support.v7.widget.RecyclerView;
+import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -80,7 +81,7 @@ public class RecipeAdapter extends RecyclerView.Adapter<RecipeAdapter.RecipeView
         void bind(int index) {
             recipe = recipeList.get(index);
             contentView.setText(recipe.name);
-            if (recipe.image != null && recipe.image.length() > 0) {
+            if (!TextUtils.isEmpty(recipe.image)) {
                 Picasso.with(imageView.getContext())
                         .load(recipe.image)
                         .error(R.drawable.baking_placeholder)

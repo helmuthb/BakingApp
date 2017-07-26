@@ -8,6 +8,7 @@ import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
+import android.util.Log;
 
 import java.util.List;
 
@@ -25,11 +26,10 @@ import at.breitenfellner.bakingapp.repository.BakingRepository;
 
 @UiThread
 public class RecipeViewModel extends AndroidViewModel {
-    public final static int STATE_LIST = 0;
+    public final static int STATE_INVALID = 0;
     public final static int STATE_DETAIL = 1;
     public final static int STATE_STEP = 2;
     private final BakingRepository repository;
-    private final LiveData<RecipeList> liveRecipeList;
     private final MediatorLiveData<Recipe> liveRecipe;
     private LiveData<Recipe> currentRecipe;
     private final MediatorLiveData<List<Ingredient>> liveIngredients;
@@ -44,7 +44,6 @@ public class RecipeViewModel extends AndroidViewModel {
     public RecipeViewModel(Application application) {
         super(application);
         repository = BakingRepository.getInstance(application);
-        liveRecipeList = repository.getRecipes();
         liveRecipe = new MediatorLiveData<>();
         currentRecipe = null;
         liveIngredients = new MediatorLiveData<>();
@@ -55,20 +54,18 @@ public class RecipeViewModel extends AndroidViewModel {
         currentRecipeId = null;
         currentStepNr = null;
         liveState = new MutableLiveData<>();
-        liveState.setValue(STATE_LIST);
+        liveState.setValue(STATE_INVALID);
     }
 
     public void loadRecipe(int recipeId) {
-        if (liveState.getValue() != STATE_DETAIL) {
-            liveState.setValue(STATE_DETAIL);
-        }
-        // in any case we will reset the step
-        currentStepNr = null;
-        liveStep.setValue(null);
         if (currentRecipeId != null && recipeId == currentRecipeId) {
             // we are already there
             return;
         }
+        // otherwise we will reset the step
+        liveState.setValue(STATE_DETAIL);
+        currentStepNr = null;
+        liveStep.setValue(null);
         currentRecipeId = recipeId;
         if (currentRecipe != null) {
             liveRecipe.removeSource(currentRecipe);
@@ -116,38 +113,12 @@ public class RecipeViewModel extends AndroidViewModel {
         });
     }
 
-    public void resetRecipe() {
-        if (liveState.getValue() != STATE_LIST) {
-            liveState.setValue(STATE_LIST);
-        }
-        currentRecipeId = null;
-        currentStepNr = null;
-        liveStep.setValue(null);
-        if (currentRecipe != null) {
-            liveRecipe.removeSource(currentRecipe);
-            currentRecipe = null;
-        }
-        if (currentIngredients != null) {
-            liveIngredients.removeSource(currentIngredients);
-            currentIngredients = null;
-        }
-        if (currentSteps != null) {
-            liveSteps.removeSource(currentSteps);
-            currentSteps = null;
-        }
-        liveRecipe.setValue(null);
-        liveIngredients.setValue(null);
-        liveSteps.setValue(null);
-    }
-
     public void loadStepByNr(int stepNr) {
-        if (liveState.getValue() != STATE_STEP) {
-            liveState.setValue(STATE_STEP);
-        }
         if (currentStepNr != null && stepNr == currentStepNr) {
             // we are already there
             return;
         }
+        liveState.setValue(STATE_STEP);
         currentStepNr = stepNr;
         // is the step already loaded?
         if (liveSteps.getValue() != null) {
@@ -170,10 +141,6 @@ public class RecipeViewModel extends AndroidViewModel {
             liveState.setValue(STATE_DETAIL);
             liveStep.setValue(null);
         }
-    }
-
-    public LiveData<RecipeList> getRecipes() {
-        return liveRecipeList;
     }
 
     public LiveData<Recipe> getRecipe() {

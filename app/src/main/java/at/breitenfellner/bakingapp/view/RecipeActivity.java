@@ -1,5 +1,6 @@
 package at.breitenfellner.bakingapp.view;
 
+import android.app.Activity;
 import android.arch.lifecycle.LifecycleRegistry;
 import android.arch.lifecycle.LifecycleRegistryOwner;
 import android.arch.lifecycle.Observer;
@@ -14,18 +15,20 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.app.FragmentTransaction;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
 
 
 import at.breitenfellner.bakingapp.R;
 import at.breitenfellner.bakingapp.model.Recipe;
+import at.breitenfellner.bakingapp.util.ExoPlayerVideoHandler;
 import at.breitenfellner.bakingapp.viewmodel.RecipeViewModel;
 import butterknife.BindView;
 import butterknife.ButterKnife;
 
 import static at.breitenfellner.bakingapp.viewmodel.RecipeViewModel.STATE_DETAIL;
-import static at.breitenfellner.bakingapp.viewmodel.RecipeViewModel.STATE_LIST;
+import static at.breitenfellner.bakingapp.viewmodel.RecipeViewModel.STATE_INVALID;
 import static at.breitenfellner.bakingapp.viewmodel.RecipeViewModel.STATE_STEP;
 
 
@@ -43,14 +46,11 @@ public class RecipeActivity extends AppCompatActivity
     View multipane;
     @BindView(R.id.toolbar)
     Toolbar toolbar;
-    @BindView(R.id.recipe_list_container)
-    View listContainer;
     @BindView(R.id.recipe_detail_container)
     View detailContainer;
     @BindView(R.id.recipe_step_container)
     View stepContainer;
     RecipeViewModel viewModel;
-    RecipeListFragment listFragment;
     RecipeDetailFragment detailFragment;
     RecipeStepFragment stepFragment;
     int oldState;
@@ -63,12 +63,8 @@ public class RecipeActivity extends AppCompatActivity
 
     @Override
     public void onBackPressed() {
-        if (oldState > STATE_LIST) {
-            if (oldState == RecipeViewModel.STATE_DETAIL) {
-                viewModel.resetRecipe();
-            } else if (oldState == RecipeViewModel.STATE_STEP) {
-                viewModel.resetStep();
-            }
+        if (oldState == STATE_STEP) {
+            viewModel.resetStep();
         } else {
             super.onBackPressed();
         }
@@ -105,7 +101,7 @@ public class RecipeActivity extends AppCompatActivity
         if (multipane == null) {
             android.support.v7.app.ActionBar actionBar = getSupportActionBar();
             if (actionBar != null) {
-                actionBar.setDisplayHomeAsUpEnabled(state > STATE_LIST);
+                actionBar.setDisplayHomeAsUpEnabled(true);
                 String title = getResources().getString(R.string.app_name);
                 try {
                     if (state == RecipeViewModel.STATE_STEP) {
@@ -123,34 +119,37 @@ public class RecipeActivity extends AppCompatActivity
                 FragmentTransaction.TRANSIT_FRAGMENT_CLOSE);
         // 1. hide all fragments not needed
         if (multipane != null) {
-            hideFragmentIf(ft, detailFragment, state == STATE_LIST);
             hideFragmentIf(ft, stepFragment, state != STATE_STEP);
         }
         else {
-            hideFragmentIf(ft, listFragment, state != STATE_LIST);
             hideFragmentIf(ft, detailFragment, state != STATE_DETAIL);
             hideFragmentIf(ft, stepFragment, state != STATE_STEP);
         }
         // 2. show all fragments needed
         if (multipane != null) {
-            ft.show(listFragment);
-            showFragmentIf(ft, detailFragment, state >= STATE_DETAIL);
+            ft.show(detailFragment);
             showFragmentIf(ft, stepFragment, state == STATE_STEP);
         }
         else {
-            showFragmentIf(ft, listFragment, state == STATE_LIST);
             showFragmentIf(ft, detailFragment, state == STATE_DETAIL);
             showFragmentIf(ft, stepFragment, state == STATE_STEP);
         }
         ft.commit();
         oldState = state;
+
+        // stop playback if needed, and reset views
+        if (state != STATE_STEP) {
+            ExoPlayerVideoHandler.getInstance().goToBackground();
+            if (stepFragment.hadFullscreenVideo) {
+                stepFragment.hadFullscreenVideo = false;
+                recreate();
+            }
+        }
     }
 
     private void assignFragment(Fragment f) {
         if (f != null) {
-            if (f instanceof RecipeListFragment) {
-                listFragment = (RecipeListFragment) f;
-            } else if (f instanceof RecipeDetailFragment) {
+            if (f instanceof RecipeDetailFragment) {
                 detailFragment = (RecipeDetailFragment) f;
             } else if (f instanceof RecipeStepFragment) {
                 stepFragment = (RecipeStepFragment) f;
@@ -170,18 +169,13 @@ public class RecipeActivity extends AppCompatActivity
         // connect with ViewModel
         viewModel = ViewModelProviders.of(this).get(RecipeViewModel.class);
         // set status to an invalid start state
-        oldState = -1;
+        oldState = STATE_INVALID;
         // identify all fragments
         FragmentManager fm = getSupportFragmentManager();
         FragmentTransaction ft = fm.beginTransaction();
-        assignFragment(fm.findFragmentById(R.id.recipe_list_container));
         assignFragment(fm.findFragmentById(R.id.recipe_detail_container));
         assignFragment(fm.findFragmentById(R.id.recipe_step_container));
         // create & add all fragments
-        if (listFragment == null) {
-            listFragment = new RecipeListFragment();
-            ft.add(R.id.recipe_list_container, listFragment);
-        }
         if (detailFragment == null) {
             detailFragment = new RecipeDetailFragment();
             ft.add(R.id.recipe_detail_container, detailFragment);
@@ -204,6 +198,7 @@ public class RecipeActivity extends AppCompatActivity
         viewModel.getState().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(@Nullable Integer state) {
+                Log.d(getClass().getName(), "onChanged: " + state);
                 int stateInt = state == null ? 0 : state;
                 showFragments(stateInt);
             }

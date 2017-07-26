@@ -12,4 +12,10 @@
     <string name="select">Select</string>
     <string name="more">More</string>
     <string name="configure">Configure</string>
+    <string name="error_network_update">Error when updating recipes from network</string>
+    <string name="error_network_load">Error loading recipes from network</string>
+
+    <string name="title_activity_fullscreen_video">FullscreenVideoActivity</string>
+    <string name="dummy_button">Dummy Button</string>
+    <string name="dummy_content">DUMMY\nCONTENT</string>
 </resources>
