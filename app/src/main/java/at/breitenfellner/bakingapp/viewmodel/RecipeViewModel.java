@@ -6,6 +6,7 @@ import android.arch.lifecycle.LiveData;
 import android.arch.lifecycle.MediatorLiveData;
 import android.arch.lifecycle.MutableLiveData;
 import android.arch.lifecycle.Observer;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.support.annotation.UiThread;
 import android.util.Log;
@@ -39,6 +40,7 @@ public class RecipeViewModel extends AndroidViewModel {
     private final MutableLiveData<Step> liveStep;
     private Integer currentRecipeId;
     private Integer currentStepNr;
+    private int currentStepCount;
     private final MutableLiveData<Integer> liveState;
 
     public RecipeViewModel(Application application) {
@@ -53,6 +55,7 @@ public class RecipeViewModel extends AndroidViewModel {
         liveStep = new MutableLiveData<>();
         currentRecipeId = null;
         currentStepNr = null;
+        currentStepCount = 0;
         liveState = new MutableLiveData<>();
         liveState.setValue(STATE_INVALID);
     }
@@ -65,6 +68,7 @@ public class RecipeViewModel extends AndroidViewModel {
         // otherwise we will reset the step
         liveState.setValue(STATE_DETAIL);
         currentStepNr = null;
+        currentStepCount = 0;
         liveStep.setValue(null);
         currentRecipeId = recipeId;
         if (currentRecipe != null) {
@@ -95,6 +99,8 @@ public class RecipeViewModel extends AndroidViewModel {
             @Override
             public void onChanged(@Nullable List<Step> steps) {
                 liveSteps.setValue(steps);
+                // get number of steps
+                currentStepCount = steps.size();
                 // load current step if needed
                 if (currentStepNr != null && steps != null) {
                     // we will set the liveStep
@@ -133,6 +139,34 @@ public class RecipeViewModel extends AndroidViewModel {
         // not loaded; we reset it to null
         liveStep.setValue(null);
         // once the step list arrives the step data will be loaded
+    }
+
+    public void loadNextStep() {
+        if (currentStepNr == null) {
+            return;
+        }
+        loadStepByNr(currentStepNr + 1);
+    }
+
+    public void loadPreviousStep() {
+        if (currentStepNr == null || currentStepNr < 1) {
+            return;
+        }
+        loadStepByNr(currentStepNr - 1);
+    }
+
+    public boolean hasNextStep() {
+        if (currentStepNr == null) {
+            return false;
+        }
+        return currentStepNr < currentStepCount - 1;
+    }
+
+    public boolean hasPreviousStep() {
+        if (currentStepNr == null) {
+            return false;
+        }
+        return currentStepNr > 0;
     }
 
     public void resetStep() {

@@ -4,14 +4,14 @@
     android:id="@+id/recipe_detail_fragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="at.breitenfellner.bakingapp.view.RecipeDetailFragment"
-    app:layout_behavior="@string/appbar_scrolling_view_behavior">
+    android:fillViewport="true"
+    tools:context="at.breitenfellner.bakingapp.view.RecipeDetailFragment">
 
     <android.support.constraint.ConstraintLayout
         android:id="@+id/receipe_detail_content_laout"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp">
+        android:layout_height="wrap_content"
+        android:padding="@dimen/normal_margin">
 
         <TextView
             android:id="@+id/recipe_detail_title"

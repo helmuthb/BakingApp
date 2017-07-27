@@ -14,4 +14,6 @@
     <string name="configure">Configure</string>
     <string name="error_network_update">Error when updating recipes from network</string>
     <string name="error_network_load">Error loading recipes from network</string>
+    <string name="previous">Previous</string>
+    <string name="next">Next</string>
 </resources>

@@ -18,10 +18,12 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.Button;
 
 
 import at.breitenfellner.bakingapp.R;
 import at.breitenfellner.bakingapp.model.Recipe;
+import at.breitenfellner.bakingapp.model.Step;
 import at.breitenfellner.bakingapp.util.ExoPlayerVideoHandler;
 import at.breitenfellner.bakingapp.viewmodel.RecipeViewModel;
 import butterknife.BindView;
@@ -44,10 +46,18 @@ public class RecipeActivity extends AppCompatActivity
     @Nullable
     @BindView(R.id.recipe_activity_multipane)
     View multipane;
-    @BindView(R.id.recipe_detail_container)
-    View detailContainer;
     @BindView(R.id.recipe_step_container)
     View stepContainer;
+    @Nullable
+    @BindView(R.id.recipe_step_navbuttons)
+    View navButtons;
+    @Nullable
+    @BindView(R.id.recipe_step_previous)
+    Button previousButton;
+    @Nullable
+    @BindView(R.id.recipe_step_next)
+    Button nextButton;
+
     RecipeViewModel viewModel;
     RecipeDetailFragment detailFragment;
     RecipeStepFragment stepFragment;
@@ -118,19 +128,23 @@ public class RecipeActivity extends AppCompatActivity
         // 1. hide all fragments not needed
         if (multipane != null) {
             hideFragmentIf(ft, stepFragment, state != STATE_STEP);
-        }
-        else {
+        } else {
             hideFragmentIf(ft, detailFragment, state != STATE_DETAIL);
             hideFragmentIf(ft, stepFragment, state != STATE_STEP);
+        }
+        if (state != STATE_STEP && navButtons != null) {
+            navButtons.setVisibility(View.GONE);
         }
         // 2. show all fragments needed
         if (multipane != null) {
             ft.show(detailFragment);
             showFragmentIf(ft, stepFragment, state == STATE_STEP);
-        }
-        else {
+        } else {
             showFragmentIf(ft, detailFragment, state == STATE_DETAIL);
             showFragmentIf(ft, stepFragment, state == STATE_STEP);
+        }
+        if (state == STATE_STEP && navButtons != null) {
+            navButtons.setVisibility(View.VISIBLE);
         }
         ft.commit();
         oldState = state;
@@ -189,13 +203,43 @@ public class RecipeActivity extends AppCompatActivity
                 viewModel.loadRecipe(recipeId);
             }
         }
+        if (nextButton != null) {
+            nextButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // go to the next
+                    viewModel.loadNextStep();
+                }
+            });
+        }
+        if (previousButton != null) {
+            previousButton.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View view) {
+                    // go to the previous
+                    viewModel.loadPreviousStep();
+                }
+            });
+        }
         // watch for updates from the viewmodel
         viewModel.getState().observe(this, new Observer<Integer>() {
             @Override
             public void onChanged(@Nullable Integer state) {
-                Log.d(getClass().getName(), "onChanged: " + state);
                 int stateInt = state == null ? 0 : state;
                 showFragments(stateInt);
+            }
+        });
+        viewModel.getStep().observe(this, new Observer<Step>() {
+            @Override
+            public void onChanged(@Nullable Step step) {
+                boolean enablePrevious = viewModel.hasPreviousStep();
+                boolean enableNext = viewModel.hasNextStep();
+                if (previousButton != null) {
+                    previousButton.setEnabled(enablePrevious);
+                }
+                if (nextButton != null) {
+                    nextButton.setEnabled(enableNext);
+                }
             }
         });
     }
