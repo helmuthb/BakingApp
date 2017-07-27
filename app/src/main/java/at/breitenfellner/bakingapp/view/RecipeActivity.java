@@ -44,8 +44,6 @@ public class RecipeActivity extends AppCompatActivity
     @Nullable
     @BindView(R.id.recipe_activity_multipane)
     View multipane;
-    @BindView(R.id.toolbar)
-    Toolbar toolbar;
     @BindView(R.id.recipe_detail_container)
     View detailContainer;
     @BindView(R.id.recipe_step_container)
@@ -162,9 +160,6 @@ public class RecipeActivity extends AppCompatActivity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_recipe);
         ButterKnife.bind(this);
-
-        setSupportActionBar(toolbar);
-        toolbar.setTitle(getTitle());
 
         // connect with ViewModel
         viewModel = ViewModelProviders.of(this).get(RecipeViewModel.class);

@@ -174,7 +174,7 @@ public class RecipeStepFragment extends LifecycleFragment {
                                 ContextCompat.getColor(getContext(), android.R.color.black));
                         // AppBarLayout app_bar = activity.findViewById(R.id.app_bar);
                         // app_bar.setVisibility(View.GONE);
-                        View regularView = activity.findViewById(R.id.activity_coordinator);
+                        View regularView = activity.findViewById(R.id.activity_frame_layout);
                         regularView.setVisibility(View.GONE);
                         videoView.getLayoutParams().height = ViewGroup.LayoutParams.MATCH_PARENT;
                         videoView.getLayoutParams().width = ViewGroup.LayoutParams.MATCH_PARENT;

@@ -3,6 +3,7 @@ package at.breitenfellner.bakingapp.view;
 import android.arch.lifecycle.LifecycleFragment;
 import android.arch.lifecycle.Observer;
 import android.arch.lifecycle.ViewModelProviders;
+import android.os.Parcelable;
 import android.support.annotation.Nullable;
 import android.os.Bundle;
 import android.support.v7.widget.RecyclerView;
@@ -20,6 +21,8 @@ import com.squareup.picasso.Picasso;
 import java.text.DecimalFormat;
 import java.util.List;
 
+import javax.xml.parsers.ParserConfigurationException;
+
 import at.breitenfellner.bakingapp.R;
 import at.breitenfellner.bakingapp.model.Ingredient;
 import at.breitenfellner.bakingapp.model.Recipe;
@@ -32,6 +35,11 @@ import butterknife.ButterKnife;
  * A fragment representing a single Recipe detail screen.
  */
 public class RecipeDetailFragment extends LifecycleFragment implements StepAdapter.StepClickListener {
+
+    private static final String STATE_BASE = RecipeDetailFragment.class.getName();
+    private static final String STATE_INGREDIENTS = STATE_BASE + "-ingredients";
+    private static final String STATE_STEPS = STATE_BASE + "-steps";
+
     RecipeViewModel viewModel;
 
     @BindView(R.id.recipe_detail_title)
