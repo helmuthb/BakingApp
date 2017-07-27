@@ -47,6 +47,10 @@ public class ExoPlayerVideoHandler
         }
         if(context != null && uri != null && exoPlayerView != null){
             if(!uri.equals(playerUri) || player == null){
+                if (player != null) {
+                    player.release();
+                    player = null;
+                }
                 // Create a new player if the player is null or
                 // we want to play a new video
                 TrackSelection.Factory adaptiveTrackSelectionFactory =

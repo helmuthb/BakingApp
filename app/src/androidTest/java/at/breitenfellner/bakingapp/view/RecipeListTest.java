@@ -51,6 +51,13 @@ public class RecipeListTest {
 
     @Test
     public void showsRecipes() {
+        // wait for 10 seconds - let the data load ...
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
         // we click on "Nutella Pie" ...
         onView(withText("Nutella Pie"))
                 .perform(click());
